@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+    <title>KBC</title>
+</head>
+
+<body>
+    <div class="heading">
+        <h1>KAUN BANEGA CROREPATI</h1>
+    </div>
+    <div class="scores">Your Score : <span id="score">0</span>$</div>
+    <div class="box1">
+        <div class="questions">
+            <p id="question"></p>
+        </div>
+        <div class="options">
+            <button id="first" class="opt" type="submit"></button>
+            <button id="second" class="opt" type="submit"></button id="first">
+            <button id="third" class="opt" type="submit"></button id="first">
+            <button id="fourth" class="opt" type="submit"></button>
+        </div>
+        <div class="btns1">
+            <button id="new_ques" onclick="getQues()">Next Question &rarr;</button>
+            <button id="end_game" onclick="endGame()">End Game <i
+                    class="fa-solid fa-arrow-right-from-bracket"></i></button>
+        </div>
+    </div>
+    <script>
+        var Question = document.getElementById('question');
+        var Score = document.getElementById('score');
+
+        var aopt = document.getElementById("first");
+        var bopt = document.getElementById("second");
+        var copt = document.getElementById("third");
+        var dopt = document.getElementById("fourth");
+
+        const option_list = [aopt, bopt, copt, dopt]
+
+        let question = "";
+        let realData = "";
+        let i = 0;
+        let arrindex = 0;
+        let score = 0;
+        let correctAns = "";
+
+
+        getRandomNumber = (min, max) => {
+            let s1 = max - min + 1;
+            let s2 = Math.random() * s1;
+            let res = Math.floor(s2) + min;
+            return res;
+        }
+
+        createArrayOfNumbers = (start, end) => {
+            let numArray = [];
+
+            for (let i = start; i < end; i++) {
+                numArray.push(i);
+            }
+
+            return numArray;
+        }
+
+        // getNewNumber = () => {
+        // let numbersArray = createArrayOfNumbers(0,49);
+        // let rindex = getRandomNumber(0,numbersArray.length-1);
+        // let rnum = numbersArray[rindex];
+        // numbersArray.splice(rindex,1);
+        // console.log(rnum);
+        // arrindex = rnum;
+        // }
+
+        let numbersArray = createArrayOfNumbers(0, 49);
+
+        getNewQuestions = () => {
+
+            if (numbersArray.length == 0) {
+                numbersArray.length = 49;
+                window.alert(`Game Over you got ${score}$`);
+                return;
+            } else {
+
+                let rindex = getRandomNumber(0, numbersArray.length - 1);
+                let rnum = numbersArray[rindex];
+                numbersArray.splice(rindex, 1);
+                console.log(rnum);
+                arrindex = rnum;
+
+                Question.innerHTML = realData.results[arrindex].question;
+
+                const ans_list = [
+                    realData.results[arrindex].correct_answer,
+                    realData.results[arrindex].incorrect_answers[0],
+                    realData.results[arrindex].incorrect_answers[1],
+                    realData.results[arrindex].incorrect_answers[2]
+                ]
+
+                correctAns = realData.results[arrindex].correct_answer;
+                let optionsnumArray = createArrayOfNumbers(0, 4);//numbers between 0 to 4
+
+                for (let x = 0; x < 4; x++) {
+                    let roptindex = getRandomNumber(0, optionsnumArray.length - 1);
+                    let roptnum = optionsnumArray[roptindex];
+                    optionsnumArray.splice(roptindex, 1);
+                    // console.log(roptnum);
+                    option_list[x].innerHTML = ans_list[roptnum];
+                }
+            }
+        }
+
+        endGame = () => {
+            window.alert(`Game over you got ${score}$`);
+            score = 0;
+            Score.innerHTML = score;
+            getNewQuestions();
+        }
+
+        checkResult = (result) => {
+            //getting the correct answer
+            console.log(correctAns);
+            let buttons = document.querySelectorAll('.opt');
+            const display = document.getElementById('question');
+            Array.from(buttons).forEach((button) => {
+                button.addEventListener('click', (e) => {
+                    if (e.target.innerHTML == correctAns) { 
+                        score = score + 50;
+                        console.log(score);
+                        Score.innerHTML = score;
+                        getNewQuestions();
+                        return;
+                    }
+                    else{
+                        window.alert(`Correct ans is "${correctAns}"`);
+                        endGame();
+                        return;
+                    }
+                })
+            })
+        }
+
+        getQuestions = async () => {
+            const api = "https://opentdb.com/api.php?amount=50";
+            try {
+                let data = await fetch(api);
+                realData = await data.json();
+                checkResult();
+                getNewQuestions();
+            } catch (error) { }
+        };
+
+        getQuestions();
+
+        function getQues() {
+            checkResult();
+            getNewQuestions();
+        }
+
+    </script>
+</body>
+
+</html>
